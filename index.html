@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratório A/B</title>
+<meta name="robots" content="noindex">
+<style>
+:root{
+  --bg:#f5f5f6; --card:#ffffff; --ink:#1b1b1f; --muted:#5d5d66; --line:#dcdce2;
+  --mag:#ed145b; --mag-soft:#fde3ec; --a:#4a6fa5; --b:#e8761c; --ok:#1d8a4e; --ok-soft:#e3f4ea;
+  --warn:#b26a00; --warn-soft:#fff2dc; --bad:#c0263b; --bad-soft:#fbe4e7; --band:rgba(237,20,91,.14);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.45}
+header{background:#111;color:#fff;padding:14px 16px}
+header .wrap{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+header b{font-size:17px;letter-spacing:.2px}
+header b span{color:var(--mag)}
+header small{color:#bbb;font-size:13px}
+main{padding:16px}
+.wrap{max-width:780px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:0 0 14px}
+h1{font-size:22px;margin:4px 0 8px}
+h2{font-size:18px;margin:0 0 8px}
+h3{font-size:15px;margin:14px 0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+p{margin:6px 0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.mag{color:var(--mag);font-weight:bold}
+.btn{appearance:none;border:0;border-radius:8px;background:var(--mag);color:#fff;font:bold 16px Arial,Helvetica,sans-serif;padding:12px 18px;cursor:pointer;min-height:46px}
+.btn:disabled{background:#c9c9cf;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.letters{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.letters button{font:bold 24px Arial;padding:16px 0;border-radius:10px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.letters button:hover{border-color:var(--mag);color:var(--mag)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:bold}
+td.num,th.num{text-align:right;white-space:nowrap}
+.opt{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--line);border-radius:10px;padding:12px;margin:8px 0;cursor:pointer;background:#fff}
+.opt input{margin-top:4px;accent-color:var(--mag);width:18px;height:18px;flex:none}
+.opt.sel{border-color:var(--mag);background:var(--mag-soft)}
+.opt b{display:block}
+.progress{height:8px;background:#e8e8ec;border-radius:99px;overflow:hidden;margin:8px 0 2px}
+.progress i{display:block;height:100%;background:var(--mag)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi .lab{font-size:13px;color:var(--muted);font-weight:bold}
+.kpi .val{font-size:26px;font-weight:bold}
+.kpi.a .val{color:var(--a)} .kpi.b .val{color:var(--b)}
+.tool{border-radius:10px;padding:12px;margin:10px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.tool .big{font-size:22px;font-weight:bold}
+.tool.ok{background:var(--ok-soft)} .tool.ok .big{color:var(--ok)}
+.tool.bad{background:var(--bad-soft)} .tool.bad .big{color:var(--bad)}
+.tool.neu{background:#eef0f4}
+.chip{display:inline-block;border-radius:99px;padding:3px 10px;font-size:13px;font-weight:bold;background:#eee}
+.boss{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);border-left:4px solid var(--warn);border-radius:8px;padding:10px 12px;margin:10px 0}
+.boss .who{font-weight:bold;color:var(--warn);font-size:13px;text-transform:uppercase;letter-spacing:.4px}
+textarea{width:100%;min-height:70px;font:15px Arial,Helvetica,sans-serif;padding:10px;border:1px solid var(--line);border-radius:8px}
+.chart{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:4px}
+.legend i{display:inline-block;width:14px;height:10px;margin-right:5px;vertical-align:middle;border-radius:2px}
+.verdict{border-radius:10px;padding:14px;margin:10px 0}
+.verdict.g{background:var(--ok-soft)} .verdict.p{background:var(--bad-soft)} .verdict.f{background:var(--warn-soft)}
+.verdict .big{font-size:22px;font-weight:bold}
+.tag{font-size:12px;font-weight:bold;border-radius:6px;padding:2px 6px;white-space:nowrap}
+.tag.good{background:var(--ok-soft);color:var(--ok)} .tag.bad{background:var(--bad-soft);color:var(--bad)} .tag.mid{background:var(--warn-soft);color:var(--warn)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+details{margin-top:8px}
+summary{cursor:pointer;color:var(--muted);font-size:14px}
+footer{max-width:780px;margin:6px auto 30px;padding:0 16px;color:var(--muted);font-size:12px}
+.grid6{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.hidden{display:none}
+@media (max-width:420px){.kpi .val{font-size:22px}.tool .big{font-size:19px}h1{font-size:20px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><b>Laboratório <span>A/B</span></b><small>Growth Hacking Strategies · MBA FIAP · aula 3</small></div></header>
+<main><div class="wrap" id="app"></div></main>
+<footer>Simulação com números fictícios, criada para a aula. Nenhum dado é enviado ou guardado fora deste aparelho. Laboratório genérico: não é a ACME Conta.</footer>
+<script>
+const DATA = {"A":[[1982,186,1952,217,4,4],[2043,195,1989,196,8,11],[2055,189,1947,225,12,7],[1982,216,2018,202,6,6],[1992,200,2011,182,4,7],[1465,159,1369,161,7,4],[1409,175,1377,163,11,7],[1986,206,1977,200,7,9],[2001,202,2030,164,5,10],[1990,196,2029,201,11,12],[1978,207,2003,205,8,9],[2009,202,1970,197,11,7],[1369,149,1408,158,5,5],[1424,168,1380,184,3,8],[1984,196,1994,185,4,10],[2021,190,2020,194,10,10],[1980,182,1973,181,11,8],[1961,197,1967,207,10,5],[1973,187,2020,196,6,7],[1412,180,1458,156,7,1],[1338,137,1347,160,4,8],[2001,185,2077,226,8,6],[2082,187,2053,233,8,6],[1953,214,2001,205,10,6],[1993,207,2009,198,4,7],[1971,207,2030,193,5,5],[1418,147,1462,153,12,4],[1405,161,1420,171,3,8],[1989,189,1972,179,6,8],[1983,196,2001,190,7,7],[1947,197,2003,192,7,3],[2037,187,1968,193,12,10],[1989,185,2054,232,6,8],[1422,160,1437,171,8,4],[1408,169,1384,147,5,7]],"B":[[2000,190,2012,191,4,11],[1980,203,1975,208,9,5],[1999,200,2028,220,8,12],[1949,184,2011,208,7,6],[1998,213,2005,207,7,4],[1368,166,1442,181,8,6],[1396,156,1404,157,8,6],[2005,199,1974,202,14,11],[2023,209,1992,241,9,6],[1973,180,2008,224,11,7],[1992,236,2036,195,9,9],[1920,176,1981,184,9,7],[1385,142,1390,181,7,8],[1395,168,1392,175,7,3],[2026,207,1999,205,5,7],[2023,200,1948,235,6,7],[1964,213,2007,218,5,12],[2020,184,1993,191,10,17],[1958,191,2010,197,9,12],[1376,150,1395,164,7,6],[1434,166,1330,184,5,2],[1989,193,1994,205,9,7],[1968,188,1975,206,6,12],[2001,201,1972,212,7,7],[1945,180,1968,220,10,8],[1969,204,2056,205,5,9],[1429,141,1399,159,7,4],[1394,152,1356,120,4,7],[1988,202,1994,204,9,11],[1977,186,1945,199,3,5],[2031,223,2033,238,5,10],[2035,217,2075,226,10,14],[1959,200,2000,197,12,10],[1402,164,1366,182,6,9],[1420,155,1398,171,6,7]],"C":[[1955,204,2008,228,17,6],[1975,203,1970,257,11,9],[2027,195,2074,261,8,5],[1990,196,1947,217,7,10],[2040,203,1964,205,6,16],[1392,146,1342,168,4,5],[1436,157,1416,167,8,7],[1959,186,1997,197,8,9],[1977,188,2009,211,9,7],[1997,193,1999,202,4,11],[2033,194,1980,200,3,10],[1945,223,2020,200,6,7],[1415,165,1513,184,8,9],[1365,158,1369,167,4,8],[1997,217,2009,200,6,5],[2031,240,1988,208,11,9],[2043,211,1958,184,3,4],[1994,228,2046,212,9,9],[1980,204,2052,215,6,15],[1423,154,1425,133,4,3],[1360,171,1360,152,5,5],[2048,209,2048,192,10,8],[1961,203,1961,191,9,8],[2024,203,2008,225,6,2],[2087,197,2052,223,14,12],[2031,208,2058,209,8,8],[1424,154,1402,163,10,3],[1431,178,1421,167,2,4],[2025,227,2004,208,17,4],[2043,207,2039,192,2,5],[2055,215,2001,224,12,6],[2023,213,2017,202,9,13],[1940,208,2009,202,8,9],[1371,151,1379,122,9,8],[1401,162,1453,160,8,12]],"D":[[2008,207,1979,227,6,10],[2011,220,1978,221,7,17],[2022,213,1976,222,12,19],[1960,197,2031,229,5,21],[2043,181,2029,233,11,15],[1410,149,1472,199,3,6],[1441,153,1343,173,5,8],[2026,224,1992,202,5,15],[1903,187,2048,241,13,13],[2071,201,2014,197,3,14],[1995,202,1964,253,7,9],[2006,221,1967,221,7,14],[1337,147,1389,177,2,8],[1439,166,1362,196,3,9],[1970,195,1998,231,10,15],[1946,213,1976,209,8,13],[2083,210,1998,221,5,24],[1964,172,2069,214,7,17],[2001,221,1987,218,8,23],[1392,186,1315,165,4,12],[1360,156,1412,174,7,15],[1949,177,2045,289,10,19],[2030,192,1989,205,4,18],[2023,223,2078,242,6,16],[2037,221,1966,255,9,18],[2005,203,2003,226,15,24],[1492,179,1429,186,4,10],[1445,149,1376,185,6,10],[1982,196,2026,211,9,12],[2004,199,2006,232,6,15],[1994,194,2026,236,10,13],[1970,194,1969,197,3,14],[1981,191,1947,206,6,15],[1432,150,1390,168,5,13],[1433,156,1293,157,5,8]],"E":[[2067,196,1996,196,9,10],[2043,190,2034,201,11,11],[1954,194,2033,210,6,11],[1962,198,2042,171,6,8],[2006,200,2014,175,8,7],[1365,147,1407,143,3,4],[1436,152,1386,133,4,8],[2066,205,2057,177,8,4],[2022,198,1995,184,7,9],[2044,219,2065,192,7,7],[1989,193,2068,173,12,10],[2048,205,2070,187,9,7],[1393,148,1383,155,6,8],[1434,169,1362,129,7,5],[2027,187,2012,195,6,6],[1968,219,2011,203,5,11],[1994,205,2003,184,9,7],[1995,192,2012,167,10,8],[2069,214,2047,179,4,10],[1409,153,1370,161,9,4],[1442,165,1408,143,10,7],[1980,209,2022,186,5,7],[1955,198,1951,191,5,10],[2010,206,1977,165,9,6],[2161,200,2019,199,12,6],[1970,190,1918,191,8,9],[1430,143,1354,135,7,6],[1388,148,1418,146,9,6],[1945,182,2032,175,10,10],[2049,203,2041,183,14,9],[2062,202,1978,179,2,6],[1911,194,1960,152,6,8],[2042,213,1944,180,6,5],[1318,142,1370,154,8,3],[1393,152,1390,137,11,4]],"F":[[2174,232,1793,205,1,4],[2136,236,1810,199,5,6],[2140,241,1890,202,9,10],[2174,196,1773,206,5,7],[2200,229,1764,202,7,9],[1481,154,1299,166,7,3],[1508,166,1252,166,2,5],[2168,236,1777,193,7,12],[2188,226,1818,209,11,9],[2147,209,1855,230,18,9],[2234,217,1826,211,11,7],[2169,213,1750,182,8,4],[1527,160,1302,165,2,7],[1501,175,1257,154,7,5],[2176,234,1794,182,6,9],[2200,190,1772,198,6,11],[2245,219,1821,200,11,8],[2231,224,1815,211,8,7],[2207,217,1824,205,4,10],[1503,173,1278,175,8,2],[1545,183,1285,146,6,4],[2230,207,1824,200,9,8],[2254,221,1756,188,9,9],[2189,220,1798,173,9,8],[2169,237,1793,203,10,9],[2192,224,1838,234,8,6],[1607,165,1260,192,7,7],[1491,179,1291,146,8,10],[2083,227,1862,230,7,14],[2149,220,1812,212,9,2],[2220,248,1798,183,7,7],[2186,215,1815,188,9,9],[2181,221,1854,227,14,8],[1565,174,1273,162,3,5],[1538,163,1260,151,5,5]]};
+const ROUNDS = [3, 7, 14, 21];
+const LAST = 35;
+const EFFECTS = [
+  {id: 20, label: '+20%', from: '10%', to: '12%', n: '3,9 mil', days: 7, why: 'cabe em 2 dias; arredondado para 1 semana completa'},
+  {id: 10, label: '+10%', from: '10%', to: '11%', n: '14,8 mil', days: 14, why: 'cabe em 8 dias; arredondado para 2 semanas completas'},
+  {id: 5,  label: '+5%',  from: '10%', to: '10,5%', n: '57,8 mil', days: 35, why: 'cabe em 29 dias; arredondado para 5 semanas completas'}
+];
+const SC = {
+  A: {
+    context: 'O app testa um botão de cadastro novo, maior e com outra cor, na tela inicial.',
+    boss: [
+      'Deu 99%! Lança amanhã que eu já aviso o conselho.',
+      'Caiu um pouco, mas continua positivo. Por que esperar?',
+      'Já são duas semanas. Preciso de um sim ou não até sexta.',
+      'O time de produto quer a vaga do teste para outra ideia. Decidam hoje.'
+    ],
+    truth: 'O botão novo não muda nada. A diferença do dia 3 era ruído: com poucos dias de dados, o acaso produz "vencedores" de 15%. Quem olha todo dia e para no primeiro 95% cai nesta armadilha.',
+    trap: 'Parado cedo (peeking)',
+    verdict: 'p', verdictTxt: 'Perdeu: descartar e registrar',
+    verdictWhy: 'Rodando até o prazo, B não se separa de A. O certo é descartar, registrar o aprendizado e liberar a vaga.',
+    good: (d, i) => (i < 2 && d === 'continuar') || (i >= 2 && d === 'descartar'), ok: (d, i) => i >= 2 && d === 'continuar',
+    roundNote: [
+      'Parar aqui é exatamente a armadilha: 3 dias, sem uma semana completa, e um efeito grande demais para ser verdade.',
+      'O "vencedor" do dia 3 já está perdendo força: sinal de ruído.',
+      'Duas semanas e B colado em A. Se o prazo combinado chegou, dá para descartar com segurança.',
+      'Três semanas sem diferença: descartar e liberar a vaga é a decisão madura.'
+    ]
+  },
+  B: {
+    context: 'O app testa uma tela de boas-vindas nova, que explica em três passos o que fazer depois do cadastro.',
+    boss: [
+      'Está inconclusivo? Então não funciona. Desliga e partimos para outra.',
+      'Uma semana e nada. Acho que o time errou na ideia.',
+      '92%... está quase lá. Não dá para arredondar?',
+      'E agora, adotamos ou não?'
+    ],
+    truth: 'A tela nova melhora a conversão em cerca de 6% de verdade. É um efeito pequeno e valioso, que só aparece com volume: inconclusivo nas duas primeiras semanas e claro a partir da terceira.',
+    trap: 'Desistir cedo de um vencedor lento',
+    verdict: 'g', verdictTxt: 'Ganhou: adotar',
+    verdictWhy: 'Com o tempo combinado, B fica acima de A com folga. Quem desligou no começo jogou fora um ganho real.',
+    good: (d, i) => (i >= 3 && d === 'adotar') || (i < 3 && d === 'continuar'), ok: (d, i) => (i === 2 && d === 'adotar') || (i === 3 && d === 'continuar'),
+    roundNote: [
+      'Inconclusivo no dia 3 não quer dizer "não funciona": quer dizer "ainda não sabemos".',
+      'Uma semana ainda é pouco para um efeito pequeno.',
+      'Quase 95% é tentador. Se o prazo combinado ainda não chegou, o certo é esperar.',
+      'Agora a diferença se sustenta: adotar é a decisão certa.'
+    ]
+  },
+  C: {
+    context: 'O app testa um visual novo da tela inicial, com cores fortes e animações.',
+    boss: [
+      '+22%! É o melhor teste do ano.',
+      'Continua forte. Vamos ligar para 100% dos clientes.',
+      'Caiu para +9%, mas segue significativo. Lança.',
+      'Caiu de novo? Deve ser sazonal. Lança assim mesmo.'
+    ],
+    truth: 'O visual novo chama atenção nos primeiros dias e depois perde a graça. O ganho da 1ª semana some a partir da 3ª: é efeito novidade. A média acumulada demora a mostrar isso; o ganho de cada semana mostra logo.',
+    trap: 'Efeito novidade',
+    verdict: 'p', verdictTxt: 'Perdeu: descartar e registrar',
+    verdictWhy: 'Passada a novidade, B não converte mais que A. Adotar no começo seria trocar o app inteiro por um ganho que não dura.',
+    good: (d, i) => (i < 2 && d === 'continuar') || (i >= 2 && d === 'descartar'), ok: (d, i) => i >= 2 && d === 'continuar',
+    roundNote: [
+      '+22% em 3 dias é grande demais para ser verdade. Vale esperar ao menos semanas completas.',
+      'Olhe o ganho da semana, não só o acumulado: ele já começou a cair.',
+      'O acumulado ainda diz "significativo", mas a 2ª semana rendeu bem menos que a 1ª.',
+      'Na 3ª semana o ganho praticamente zerou. A novidade passou.'
+    ]
+  },
+  D: {
+    context: 'O app testa um cadastro mais curto: tira duas perguntas de confirmação de dados.',
+    boss: [
+      'Nada ainda? Que demora.',
+      '+15% com mais de 99,9%! Lança hoje.',
+      'O atendimento reclamou de alguma coisa, mas conversão é o que importa.',
+      'Já está provado. Por que vocês ainda estão olhando o atendimento?'
+    ],
+    truth: 'O cadastro curto converte cerca de 12% mais, mas as reclamações no atendimento dobram: sem as perguntas de confirmação, mais gente erra os dados e trava depois. A conversão sobe e o guardrail piora: não é vitória.',
+    trap: 'Guardrail ignorado',
+    verdict: 'p', verdictTxt: 'Perdeu como está: não adotar e corrigir',
+    verdictWhy: 'A métrica principal ganhou, mas o guardrail dobrou. O certo é não adotar esta versão e testar outra que encurte o cadastro sem gerar erro.',
+    good: (d, i) => (i === 0 && d === 'continuar') || (i >= 1 && d === 'descartar'), ok: (d, i) => i >= 1 && d === 'continuar',
+    roundNote: [
+      'Cedo demais para qualquer conclusão.',
+      'A conversão ganhou com folga, mas olhe a linha das reclamações antes de comemorar.',
+      'Reclamações dobradas são custo: atendimento, cancelamento, reputação.',
+      'O guardrail continua o dobro. Adotar assim é empurrar o problema para outra área.'
+    ]
+  },
+  E: {
+    context: 'O app testa um design novo, assinado por uma agência premiada, para a tela de cadastro.',
+    boss: [
+      'A tela nova ganhou prêmio de design. Já está na frente, né?',
+      'Está um pouco atrás, mas é ruído. Eu gosto da B.',
+      '−7%? Os clientes vão se acostumar. Lança.',
+      'Vamos lançar e ajustar depois. A agência já fez o anúncio.'
+    ],
+    truth: 'O design premiado converte cerca de 8% menos. No dia 3 o acaso deixou B na frente, o que reforçou a opinião do diretor. A partir da 2ª semana não há dúvida: B perde.',
+    trap: 'A opinião do chefe contra o dado',
+    verdict: 'p', verdictTxt: 'Perdeu: descartar e registrar',
+    verdictWhy: 'Com o prazo cumprido, B fica abaixo de A com folga. Lançar seria pagar pela opinião do chefe com conversão.',
+    good: (d, i) => (i < 2 && d === 'continuar') || (i >= 2 && d === 'descartar'), ok: () => false,
+    roundNote: [
+      'A vantagem do dia 3 não é significativa. Gostar do design não é evidência.',
+      'B passou para trás. Ainda é cedo, mas o sinal mudou de lado.',
+      'Agora é claro: B perde. A pressão do diretor não muda o dado.',
+      'Três semanas de B atrás: descartar é proteger a receita.'
+    ]
+  },
+  F: {
+    context: 'O app testa um fluxo de cadastro novo, carregado por outro sistema. O plano era dividir 50/50.',
+    boss: [
+      'Nada ainda.',
+      '+10% com 99%! Lança.',
+      'Confirmado de novo. Por que vocês estão olhando o número de visitantes?',
+      'Três semanas de vitória. O que falta?'
+    ],
+    truth: 'A divisão saiu 55/45, e não 50/50: o fluxo novo demora a carregar e perde parte das pessoas antes de contá-las. As que sobram em B já eram as mais interessadas. O "ganho" vem de quem entrou em cada grupo, não da versão. O teste não permite concluir nada.',
+    trap: 'Divisão quebrada (quem entrou no teste)',
+    verdict: 'f', verdictTxt: 'Falhou: repetir do jeito certo',
+    verdictWhy: 'Com a divisão fora do planejado, os grupos deixaram de ser comparáveis. Não dá para adotar nem descartar: é corrigir o sorteio e rodar de novo.',
+    good: (d, i) => d === 'descartar' && i >= 1, ok: (d) => d === 'continuar',
+    roundNote: [
+      'Confira primeiro quem entrou: 55% para A e 45% para B não é o 50/50 planejado.',
+      'O número parece ótimo, mas a divisão continua torta. Antes de ler o resultado, pergunte quem entrou.',
+      'Mais dados não consertam um sorteio quebrado.',
+      'Três semanas de um teste com divisão quebrada continuam sem valer.'
+    ]
+  }
+};
+const DECISIONS = [
+  {id: 'adotar', t: 'Parar e adotar B', d: 'Encerrar o teste e levar a versão nova para todos.'},
+  {id: 'continuar', t: 'Continuar', d: 'Deixar o teste rodando até a próxima rodada.'},
+  {id: 'descartar', t: 'Descartar B', d: 'Encerrar o teste e ficar com a versão atual (ou corrigir e repetir).'}
+];
+
+/* ---------- estatística (o aluno não calcula; a ferramenta mostra) ---------- */
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y}
+function ncdf(z){return 0.5*(1+erf(z/Math.SQRT2))}
+function cum(k, d){const r=[0,0,0,0,0,0];for(let i=0;i<d;i++){for(let j=0;j<6;j++)r[j]+=DATA[k][i][j]}return r}
+function stats(k, d, from){
+  let r;
+  if(from){const a=cum(k,d),b=cum(k,from);r=a.map((v,i)=>v-b[i])}else r=cum(k,d);
+  const [ta,ca,tb,cb,qa,qb]=r;const pa=ca/ta,pb=cb/tb;
+  const se=Math.sqrt(pa*(1-pa)/ta+pb*(1-pb)/tb);const z=(pb-pa)/se;const p=2*(1-ncdf(Math.abs(z)));
+  return {ta,ca,tb,cb,pa,pb,lift:pb/pa-1,lo:(pb-pa-1.96*se)/pa,hi:(pb-pa+1.96*se)/pa,sig:1-p,
+    split:ta/(ta+tb),qa:qa/ta*1000,qb:qb/tb*1000};
+}
+const pct=(x,dig=1)=>(x*100).toLocaleString('pt-BR',{minimumFractionDigits:dig,maximumFractionDigits:dig})+'%';
+const sgn=(x,dig=1)=>(x>0?'+':x<0?'−':'')+pct(Math.abs(x),dig);
+const dec1=x=>(Math.round(x*10)/10).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const int=x=>Math.round(x).toLocaleString('pt-BR');
+const sigTxt=s=>s>0.999?'> 99,9%':pct(s,0);
+function status(s){
+  if(s.sig>=0.95&&s.lift>0)return {cls:'ok',txt:'B à frente',sub:'diferença significativa'};
+  if(s.sig>=0.95&&s.lift<0)return {cls:'bad',txt:'B atrás',sub:'diferença significativa'};
+  return {cls:'neu',txt:'Inconclusivo',sub:'a diferença ainda pode ser acaso'};
+}
+
+/* ---------- gráfico ---------- */
+function chart(k, upto, opts={}){
+  const W=480,H=300,L=50,R=10,T=18,B=44;const days=[];for(let d=2;d<=upto;d++)days.push(d);
+  const pts=days.map(d=>({d,...stats(k,d)}));
+  let ymin=-0.3,ymax=0.4;
+  const x=d=>L+(d-1)/(LAST-1)*(W-L-R);const y=v=>T+(ymax-Math.max(ymin,Math.min(ymax,v)))/(ymax-ymin)*(H-T-B);
+  let g='';
+  for(let v=-0.3;v<=0.401;v+=0.1){const vv=Math.round(v*10)/10;g+=`<line x1="${L}" x2="${W-R}" y1="${y(vv)}" y2="${y(vv)}" stroke="${vv===0?'#888':'#e3e3e8'}" stroke-width="${vv===0?1.5:1}"/>`;
+    g+=`<text x="${L-8}" y="${y(vv)+4}" font-size="14" text-anchor="end" fill="#666">${vv>0?'+':''}${Math.round(vv*100)}%</text>`}
+  for(let d=7;d<=LAST;d+=7){g+=`<line x1="${x(d)}" x2="${x(d)}" y1="${T}" y2="${H-B}" stroke="#f0f0f3"/><text x="${x(d)}" y="${H-B+18}" font-size="14" text-anchor="middle" fill="#666">${d}</text>`}
+  g+=`<text x="${x(1)}" y="${H-B+18}" font-size="14" text-anchor="middle" fill="#666">1</text>`;
+  if(opts.deadline){g+=`<line x1="${x(opts.deadline)}" x2="${x(opts.deadline)}" y1="${T}" y2="${H-B}" stroke="#ed145b" stroke-dasharray="5 4" stroke-width="2"/><text x="${x(opts.deadline)-4}" y="${T+12}" font-size="14" text-anchor="end" fill="#ed145b" font-weight="bold">prazo</text>`}
+  const band='M'+pts.map(p=>`${x(p.d)},${y(p.hi)}`).join('L')+'L'+pts.slice().reverse().map(p=>`${x(p.d)},${y(p.lo)}`).join('L')+'Z';
+  g+=`<path d="${band}" fill="rgba(232,118,28,.18)"/>`;
+  g+=`<path d="M${pts.map(p=>`${x(p.d)},${y(p.lift)}`).join('L')}" fill="none" stroke="#e8761c" stroke-width="3"/>`;
+  if(opts.today){const p=pts[pts.length-1];g+=`<circle cx="${x(p.d)}" cy="${y(p.lift)}" r="5.5" fill="#e8761c" stroke="#fff" stroke-width="2"/><text x="${x(p.d)+8}" y="${y(p.lift)-8}" font-size="15" font-weight="bold" fill="#1b1b1f">hoje</text>`}
+  if(opts.truth!==undefined){g+=`<line x1="${L}" x2="${W-R}" y1="${y(opts.truth)}" y2="${y(opts.truth)}" stroke="#1d8a4e" stroke-width="2" stroke-dasharray="2 4"/>`}
+  g+=`<text x="${L}" y="${H-6}" font-size="14" fill="#666">dia do teste</text>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico do ganho acumulado de B sobre A">${g}</svg>`;
+}
+function weekly(k, upto){
+  const weeks=Math.floor(upto/7);if(weeks<1)return '<p class="small muted">O ganho de cada semana aparece quando a 1ª semana fechar.</p>';
+  let rows='';for(let w=1;w<=weeks;w++){const s=stats(k,w*7,(w-1)*7);rows+=`<tr><td>Semana ${w}</td><td class="num">${sgn(s.lift)}</td><td class="num">${dec1(s.qa)} × ${dec1(s.qb)}</td></tr>`}
+  return `<table><tr><th>Só a semana</th><th class="num">Ganho de B</th><th class="num">Reclamações A × B</th></tr>${rows}</table>`;
+}
+
+/* ---------- estado ---------- */
+let S={k:null,effect:null,round:0,dec:[],why:[]};
+function save(){try{localStorage.setItem('labab',JSON.stringify(S))}catch(e){}}
+function load(){try{const v=JSON.parse(localStorage.getItem('labab'));if(v&&v.k&&DATA[v.k])S=v}catch(e){}}
+const app=document.getElementById('app');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function go(){save();render();window.scrollTo(0,0)}
+
+function render(){
+  if(new URLSearchParams(location.search).has('painel'))return panel();
+  if(!S.k)return home();
+  if(!S.effect)return setup();
+  if(S.round<ROUNDS.length)return round();
+  return reveal();
+}
+function home(){
+  app.innerHTML=`<div class="card"><h1>Decidir com o teste rodando</h1>
+  <p>Vocês vão acompanhar um teste A/B dia a dia. Em cada rodada, o grupo decide: <b>parar e adotar</b>, <b>continuar</b> ou <b>descartar</b>, e anota por quê.</p>
+  <p class="muted">A/B: metade dos clientes, sorteada, vê a versão atual (A); a outra metade vê a nova (B).</p>
+  <h3>Digite a letra que o professor deu ao grupo</h3>
+  <div class="letters">${Object.keys(SC).map(k=>`<button data-k="${k}">${k}</button>`).join('')}</div></div>`;
+  app.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{S={k:b.dataset.k,effect:null,round:0,dec:[],why:[]};go()});
+}
+function setup(){
+  const sc=SC[S.k];
+  app.innerHTML=`<div class="card"><span class="chip">Teste ${S.k}</span>
+  <h1>Antes de começar: o prazo</h1>
+  <p>${sc.context}</p>
+  <p>Hoje <b>10%</b> de quem abre a tela conclui o cadastro. Cerca de <b>2.000 pessoas por dia</b> caem em cada versão (menos no fim de semana).</p>
+  <h3>Qual ganho vale a pena detectar?</h3>
+  <p class="small muted">Quanto menor o ganho que vocês querem enxergar, mais gente o teste precisa, e mais dias ele leva. Escolham; a tabela dá o prazo.</p>
+  ${EFFECTS.map(e=>`<label class="opt" data-e="${e.id}"><input type="radio" name="ef" value="${e.id}"><div><b>${e.label} &nbsp;<span class="muted small">(de ${e.from} para ${e.to})</span></b>
+   <span class="small">${e.n} pessoas por versão · <span class="mag">${e.days} dias</span> <span class="muted">(${e.why})</span></span></div></label>`).join('')}
+  <p class="small muted">Tabela calculada com 95% de confiança e 80% de poder (a chance de enxergar o ganho, se ele existir). Prazos arredondados para semanas completas, porque segunda não é sábado.</p>
+  <div class="row"><span class="spacer"></span><button class="btn" id="ok" disabled>Registrar o prazo e começar</button></div></div>`;
+  let ch=null;
+  app.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{app.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel');o.querySelector('input').checked=true;ch=+o.dataset.e;document.getElementById('ok').disabled=false});
+  document.getElementById('ok').onclick=()=>{S.effect=ch;go()};
+}
+function deadline(){return EFFECTS.find(e=>e.id===S.effect).days}
+function round(){
+  const sc=SC[S.k],i=S.round,d=ROUNDS[i],s=stats(S.k,d),st=status(s),dl=deadline();
+  const stopped=S.dec.findIndex(x=>x!=='continuar');
+  const after=stopped>=0&&stopped<i;
+  app.innerHTML=`<div class="card">
+   <div class="row"><span class="chip">Teste ${S.k}</span><span class="chip">Rodada ${i+1} de 4</span><span class="spacer"></span><span class="small muted">prazo combinado: dia ${dl}</span></div>
+   <h1>Dia ${d} do teste</h1>
+   <div class="progress"><i style="width:${Math.min(100,d/dl*100)}%"></i></div>
+   <p class="small muted">${d>=dl?'O prazo combinado já chegou.':`Faltam ${dl-d} dias para o prazo combinado.`}</p>
+   ${after?`<div class="boss" style="background:#eef0f4;border-color:#888"><div><div class="who" style="color:#555">Vocês já encerraram no dia ${ROUNDS[stopped]}</div>Veja o que o teste mostraria se tivesse continuado, e decidam de novo como se ainda estivesse rodando.</div></div>`:''}
+   <div class="kpis">
+    <div class="kpi a"><div class="lab">A · versão atual</div><div class="val">${pct(s.pa,2)}</div><div class="small muted">${int(s.ca)} de ${int(s.ta)} pessoas</div></div>
+    <div class="kpi b"><div class="lab">B · versão nova</div><div class="val">${pct(s.pb,2)}</div><div class="small muted">${int(s.cb)} de ${int(s.tb)} pessoas</div></div>
+   </div>
+   <div class="tool ${st.cls}"><div><div class="small muted">O que a ferramenta diz</div><div class="big">${st.txt}: ${sgn(s.lift)}</div><div class="small">${st.sub}</div></div><span class="spacer"></span>
+    <div style="text-align:right"><div class="small muted">Significância</div><div class="big" style="color:inherit">${sigTxt(s.sig)}</div></div></div>
+   <p class="small muted">Faixa provável do ganho de B: de ${sgn(s.lo)} a ${sgn(s.hi)}. Significância: quanto a ferramenta confia que a diferença não é acaso; o mercado costuma pedir 95%.</p>
+   ${chart(S.k,d,{deadline:dl,today:true})}
+   <div class="legend"><span><i style="background:#e8761c"></i>ganho acumulado de B</span><span><i style="background:rgba(232,118,28,.25)"></i>faixa provável</span><span><i style="background:#ed145b"></i>prazo combinado</span></div>
+   <h3>Quem entrou e o que não pode piorar</h3>
+   <table>
+    <tr><th></th><th class="num">A</th><th class="num">B</th></tr>
+    <tr><td>Divisão das pessoas <span class="muted small">(planejado: 50/50)</span></td><td class="num">${pct(s.split,0)}</td><td class="num">${pct(1-s.split,0)}</td></tr>
+    <tr><td>Guardrail: reclamações no atendimento <span class="muted small">(por mil pessoas)</span></td><td class="num">${dec1(s.qa)}</td><td class="num">${dec1(s.qb)}</td></tr>
+   </table>
+   <h3>Ganho de cada semana</h3>${weekly(S.k,d)}
+   <div class="boss"><div><div class="who">Recado do diretor</div>“${sc.boss[i]}”</div></div>
+  </div>
+  <div class="card"><h2>Decisão do grupo no dia ${d}</h2>
+   ${DECISIONS.map(o=>`<label class="opt" data-d="${o.id}"><input type="radio" name="dc" value="${o.id}"><div><b>${o.t}</b><span class="small muted">${o.d}</span></div></label>`).join('')}
+   <p class="small"><b>Por quê?</b> <span class="muted">(o redator anota também no slide de registro)</span></p>
+   <textarea id="why" placeholder="Ex.: o que vimos na tela e o que nos faria mudar de ideia"></textarea>
+   <div class="row" style="margin-top:10px"><span class="spacer"></span><button class="btn" id="ok" disabled>${i<3?'Registrar e avançar':'Registrar e ver o que era verdade'}</button></div>
+  </div>`;
+  let ch=null;
+  app.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{app.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel');o.querySelector('input').checked=true;ch=o.dataset.d;document.getElementById('ok').disabled=false});
+  document.getElementById('ok').onclick=()=>{S.dec[i]=ch;S.why[i]=document.getElementById('why').value.slice(0,400);S.round++;go()};
+}
+function reveal(){
+  const sc=SC[S.k],dl=deadline(),s=stats(S.k,LAST);
+  const truth={A:0,B:0.06,C:0,D:0.12,E:-0.08,F:undefined}[S.k];
+  const stop=S.dec.findIndex(x=>x!=='continuar');
+  const rows=S.dec.map((dc,i)=>{const g=sc.good(dc,i),o=sc.ok(dc,i);
+    return `<tr><td>Dia ${ROUNDS[i]}</td><td>${DECISIONS.find(x=>x.id===dc).t}${S.why[i]?`<div class="small muted">${esc(S.why[i])}</div>`:''}</td><td><span class="tag ${g?'good':o?'mid':'bad'}">${g?'boa leitura':o?'defensável':'armadilha'}</span><div class="small muted" style="margin-top:4px">${sc.roundNote[i]}</div></td></tr>`}).join('');
+  app.innerHTML=`<div class="card"><span class="chip">Teste ${S.k}</span>
+   <h1>O que era verdade</h1>
+   <p>${sc.truth}</p>
+   <div class="verdict ${sc.verdict}"><div class="small muted">Veredito certo (o mesmo da Oficina 4)</div><div class="big">${sc.verdictTxt}</div><p>${sc.verdictWhy}</p></div>
+   <p><b>Armadilha deste teste:</b> <span class="mag">${sc.trap}</span></p>
+   ${chart(S.k,LAST,{deadline:dl,truth})}
+   <div class="legend"><span><i style="background:#e8761c"></i>ganho acumulado de B até o dia ${LAST}</span>${truth!==undefined?'<span><i style="background:#1d8a4e"></i>efeito verdadeiro</span>':''}<span><i style="background:#ed145b"></i>prazo que vocês combinaram</span></div>
+   <p class="small muted">No dia ${LAST}: B ${sgn(s.lift)} sobre A, significância ${sigTxt(s.sig)}, divisão ${pct(s.split,0)}/${pct(1-s.split,0)}, reclamações ${dec1(s.qa)} × ${dec1(s.qb)} por mil.</p>
+   <h3>Ganho de cada semana</h3>${weekly(S.k,LAST)}
+  </div>
+  <div class="card"><h2>As decisões do grupo</h2>
+   <p class="small muted">${stop>=0?`O grupo encerrou o teste no dia ${ROUNDS[stop]}; o prazo combinado era o dia ${dl}.`:'O grupo não encerrou o teste em nenhuma rodada.'}</p>
+   <table><tr><th>Rodada</th><th>Decisão</th><th>Leitura</th></tr>${rows}</table>
+   <h3>Para a conversa com a turma</h3>
+   <p>Quando vocês pararam, o que o dia seguinte mostrou? E qual pergunta teriam feito ao time antes de decidir?</p>
+   <div class="row" style="margin-top:10px"><span class="spacer"></span><button class="btn ghost" id="again">Recomeçar</button></div>
+  </div>`;
+  document.getElementById('again').onclick=()=>{S={k:null,effect:null,round:0,dec:[],why:[]};go()};
+}
+function panel(){
+  const truths={A:0,B:0.06,C:0,D:0.12,E:-0.08,F:undefined};
+  app.innerHTML=`<div class="card"><h1>Painel do professor</h1><p class="muted">Os seis testes até o dia ${LAST}, para projetar na conversa das 20:27. Não divulgar antes das rodadas.</p></div>
+  <div class="grid6">${Object.keys(SC).map(k=>{const sc=SC[k];return `<div class="card"><div class="row"><span class="chip">Teste ${k}</span><span class="spacer"></span><span class="tag ${sc.verdict==='g'?'good':sc.verdict==='f'?'mid':'bad'}">${sc.verdictTxt.split(':')[0]}</span></div>
+   <p style="margin-top:8px"><b>${sc.trap}</b></p>${chart(k,LAST,{truth:truths[k]})}
+   <p class="small muted">${ROUNDS.map(d=>{const s=stats(k,d);return `dia ${d}: ${sgn(s.lift)} (${sigTxt(s.sig)})`}).join(' · ')}</p></div>`}).join('')}</div>`;
+}
+load();render();
+</script>
+</body>
+</html>
