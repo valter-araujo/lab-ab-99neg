@@ -285,7 +285,7 @@ function home(){
   app.innerHTML=`<div class="card"><h1>Decidir com o teste rodando</h1>
   <p>Vocês vão acompanhar um teste A/B dia a dia. Em cada rodada, o grupo decide: <b>parar e adotar</b>, <b>continuar</b> ou <b>descartar</b>, e anota por quê.</p>
   <p class="muted">A/B: metade dos clientes, sorteada, vê a versão atual (A); a outra metade vê a nova (B).</p>
-  <h3>Digite a letra que o professor deu ao grupo</h3>
+  <h3>Toquem na letra que o professor deu ao grupo</h3>
   <div class="letters">${Object.keys(SC).map(k=>`<button data-k="${k}">${k}</button>`).join('')}</div></div>`;
   app.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{S={k:b.dataset.k,effect:null,round:0,dec:[],why:[]};go()});
 }
